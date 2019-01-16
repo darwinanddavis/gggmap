@@ -1,0 +1,71 @@
+]0;~/Documents/Data/gggmap[?1034h6300L-127771-M:gggmap malishev$ [K6300L-127771-M:gggmap malishev$ ls -a
+.
+..
+.DS_Store
+.Rproj.user
+BubbleMap150.png
+Choropleth150.png
+ConnectedMap150.png
+DeducerSpatial.pdf
+GoogleMaps
+Interactive150.png
+LocationHistory.csv
+LocationHistory.json
+MapHexbin150.png
+README.md
+amdam.csv
+atlanta.osm
+ayepeeeye.txt
+cartography.png
+geojsonio.png
+ggmap- Spatial Visualization with ggplot2.pdf
+ggmap.Rmd
+ggmap.Rproj
+ggmap.html
+ggmap_cache
+ggmap_files
+ggmap_tute.pdf
+melb.csv
+pres
+]0;~/Documents/Data/gggmap6300L-127771-M:gggmap malishev$ git init
+Initialized empty Git repository in /Users/malishev/Documents/Data/gggmap/.git/
+]0;~/Documents/Data/gggmap6300L-127771-M:gggmap malishev$ git add.[K .
+]0;~/Documents/Data/gggmap6300L-127771-M:gggmap malishev$ git rest[Ket
+]0;~/Documents/Data/gggmap6300L-127771-M:gggmap malishev$ git status
+On branch master
+
+Initial commit
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+	[31m.Rproj.user/[m
+	[31mBubbleMap150.png[m
+	[31mChoropleth150.png[m
+	[31mConnectedMap150.png[m
+	[31mDeducerSpatial.pdf[m
+	[31mGoogleMaps/[m
+	[31mInteractive150.png[m
+	[31mLocationHistory.csv[m
+	[31mLocationHistory.json[m
+	[31mMapHexbin150.png[m
+	[31mREADME.md[m
+	[31mamdam.csv[m
+	[31matlanta.osm[m
+	[31mayepeeeye.txt[m
+	[31mcartography.png[m
+	[31mgeojsonio.png[m
+	[31mggmap- Spatial Visualization with ggplot2.pdf[m
+	[31mggmap.Rmd[m
+	[31mggmap.Rproj[m
+	[31mggmap.html[m
+	[31mggmap_cache/[m
+	[31mggmap_files/[m
+	[31mggmap_tute.pdf[m
+	[31mmelb.csv[m
+	[31mpres/[m
+
+nothing added to commit but untracked files present (use "git add" to track)
+]0;~/Documents/Data/gggmap6300L-127771-M:gggmap malishev$ git [K[K[K[Kopen .giti[K[K[K[K[K[K[K[K[K[Ktouch .gitif[Kgnore
+]0;~/Documents/Data/gggmap6300L-127771-M:gggmap malishev$ open .gitignore 
+]0;~/Documents/Data/gggmap6300L-127771-M:gggmap malishev$ git add .

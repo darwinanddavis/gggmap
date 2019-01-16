@@ -1,0 +1,12 @@
+base
+animation
+RColorBrewer
+dplyr
+RgoogleMaps
+sp
+maptools
+scales
+rgdal
+ggplot2
+rjson
+leaflet

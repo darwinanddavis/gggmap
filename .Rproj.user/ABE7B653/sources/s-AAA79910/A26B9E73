@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1547681589649.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "A26B9E73",
+    "lastKnownWriteTime" : 1547680094,
+    "last_content_update" : 1547680094,
+    "path" : "~/Documents/Data/gggmap/ggmap.Rmd",
+    "project_path" : "ggmap.Rmd",
+    "properties" : {
+        "cursorPosition" : "294,25",
+        "scrollLine" : "291"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}
