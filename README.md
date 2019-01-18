@@ -7,7 +7,7 @@
 
 Versions:  
  - R 3.5.0  
- - RStudio 1.1.453  
+ - RStudio 1.1.453    
 
 ******
 
@@ -22,6 +22,7 @@ File extensions:
 .json      
 .pdf    
 .html  
+.png    
 
 ******  
 
