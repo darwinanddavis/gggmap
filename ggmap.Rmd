@@ -12,13 +12,6 @@ linkcolor: pink
 urlcolor: blue
 citecolor: red
 output:
-  html_document:
-    highlight: tango
-    code_folding: hide
-    toc: yes
-    toc_depth: 4
-    number_sections: no
-    toc_float: yes
   pdf_document:
     includes:
       in_header: # add .tex file with header content
@@ -34,6 +27,13 @@ output:
     citation_package: biblatex # natbib
     latex_engine: xelatex #pdflatex # lualatex
     keep_tex: true # keep .tex file in dir 
+  html_document:
+    highlight: tango
+    code_folding: hide
+    toc: yes
+    toc_depth: 4
+    number_sections: no
+    toc_float: yes
   word_document:
     highlight: tango
     keep_md: yes
@@ -47,13 +47,13 @@ tags:
 - nothing
 - nothingness
 params: 
-  dir: "/Users/malishev/Documents/Data/ggmap"
+  dir: "/Users/malishev/Documents/Data/gggmap"
   date: !r Sys.Date()
   version: !r getRversion()
   email: "matthew.malishev@gmail.com"
   doi: https://github.com/darwinanddavis/ggmap
 classoption: portrait
-# ^['https://github.com/darwinanddavis/UsefulCode'] # footnote
+# ^['https://github.com/darwinanddavis/gggmap'] # footnote
 vignette: >
   %\VignetteIndexEntry{Mining Google Maps data}
   %\VignetteEncoding{UTF-8}
@@ -113,6 +113,9 @@ This document converts __.json__ Google Maps data into useable `R` data for mini
 Converting .json to .csv: [https://konklone.io/json/](https://konklone.io/json/)  
 
 ### Troubleshooting
+
+[geocode failed with status REQUEST_DENIED, location = ... ](https://stackoverflow.com/questions/52565472/get-map-not-passing-the-api-key-http-status-was-403-forbidden/52617929#52617929)  
+
 [Troubleshooting with `ggmap` package installation](https://stackoverflow.com/questions/40642850/ggmap-error-geomrasterann-was-built-with-an-incompatible-version-of-ggproto)    
 
 [When encountering error in fetch(key) : lazy-load database](https://stackoverflow.com/questions/30424608/error-in-fetchkey-lazy-load-database)  
@@ -132,9 +135,11 @@ rm *.rdb # remove .rdb package
 
 ### Install packages  
 ```{r, load packages, include=T, cache=F, message=F, warning=F, results='hide'}
-packages <- c("animation","RColorBrewer","dplyr","ggmap","RgoogleMaps","sp","maptools","scales","rgdal","ggplot2","leaflet","jsonlite","readr")
+packages <- c("animation","RColorBrewer","dplyr","ggmap","RgoogleMaps","sp","maptools","scales","rgdal","ggplot2","leaflet","jsonlite","readr","devtools")
 if (require(packages)) {
-  install.packages(packages,dependencies = T)
+  # suppressPackageStartupMessages(
+    install.packages(packages,dependencies = T)
+    # )
   require(packages)
 
 # install RgoogleMaps and OpenStreetMap separately, for some reason  
@@ -143,16 +148,21 @@ if (require(packages)) {
   install.packages("leaflet"); library(leaflet)
   install.packages("googleway") ; library(googleway)
   
-# install ggmap and geojsonio from github and source
-  devtools::install_github("dkahle/ggmap"); library(ggmap)
+# install geojsonio from github and source
   devtools::install_github("ropensci/geojsonio"); library(geojsonio)
 }
 
 ppp <- lapply(packages,require,character.only=T)
 if(any(ppp==F)){cbind(packages,ppp);cat("\n\n\n ---> Check packages are loaded properly <--- \n\n\n")}
 
-
 ```
+
+Install `ggmap` from source separately    
+```{r}
+devtools::install_github("dkahle/ggmap", ref = "tidyup"
+                           ); library(ggmap)
+```
+
 
 ######
 
@@ -162,7 +172,7 @@ Google has individual limits on who and how often one can independently use Goog
 \  
 
 1. [Get API key](https://developers.google.com/maps/documentation/geocoding/get-api-key)  
-2. Follow the instruction in your email to access your key. This may take 24 hours.   
+2. Follow the instructions in your email to access your key. This may take 24 hours.   
 
 ### `ggmap` features  
 \  
@@ -190,26 +200,58 @@ The type of map design template you want to plot.
 sources <- c("google","osm","stamen","cloudmade");sources
 ```
 
-`get_map` plotting   
-Enter city, map source, and map type    
+`get_map` plotting     
+Register your API key with your Google developer account 
+```{r}
+api_key <- read_file("ayepeeeye.txt") 
+register_google(key = api_key) # register key 
+```
+
+Geocoding API test. Run the below steps and [see here for troubleshooting.](https://stackoverflow.com/questions/51481913/error-when-mapping-in-ggmap-with-api-key-403-forbidden/52617264#52617264)  
+```{r}
+# should spit out a bunch of r dataframe objects
+geocode("Melbourne", output = "all")
+# should plot a basic map of Melbourne
+ggmap(get_map("Melbourne"))
+
+```
+
+#### Using geocoding  
 ```{r}
 require(ggmap)
-
 # 16-1-19 
 # removed Geocoding and Geolocation from API restrictions (previously part of list)
 # https://github.com/dkahle/ggmap/issues/213
 
+# enter location
 loc <- "Melbourne" # enter location on globe 
-lon <- geocode(loc)[,1];lon; lat <- geocode(loc)[,2]; lat # get lon and lat
-points <- data.frame("lon"=c(lon,lon+0.05),"lat"=c(lat,lat+0.0002))
-?geocode
+loc_stats <- geocode(loc,output="all",override_limit = FALSE) # see all available data using geocode function 
+map <- get_map(loc2) # convert to get_map object
+ggmap(map)
+
+# takes multiple inputs that can also be colloquial
+addies <- c("Leipzig", "the taj mahal")
+geocode(addies)
+
+# turn multiple locations into df
+mutate_geocode(df, addies)
+df %>% mutate_geocode(addies)
+
+# plot with specs 
+map <- get_map(addies[1], zoom = zoom, source = source, maptype = maptype) # get map 
+
 zoom <- 12 # 10 = metropolitan level, 18 = street level. 12 is a useable city level
 source <- "stamen"
 maptype <- "toner-2010"
 bg <- "white" # set background color
-api_key <- read_file("ayepeeeye.txt") 
 
-map <- get_map(points, zoom = zoom, source = source, maptype = maptype) # get map to plot
+map <- get_map(loc, zoom = zoom, source = source, maptype = maptype) # get map to plot
+
+# generate some noisy data
+latlon <- geocode(loc,output="latlon",override_limit = FALSE) # get lon and lat
+lon <- latlon[1] %>% as.numeric(); lat <- latlon[2] %>% as.numeric() # numerics
+lon <- runif(100,lon-0.01,lon+0.01); lat <- runif(100,lat-0.01,lat+0.01)
+latlon_df <- data.frame(lon,lat)
 
 # plot map with geocode points   
 ggmap(map,
@@ -217,18 +259,56 @@ ggmap(map,
       extent="device",
       padding=0.5,
       darken=c(0.3,bg) # 0.1 = high contrast
-      ) + geom_point(aes(x = longitudeE7, y = latitudeE7,color=I("pink")), data = latlon)
+      ) + 
+  geom_point(aes(latlon_df[,1],latlon_df[,2],color=I("pink")),data=latlon_df)
 
-# regular Google Map
-paris <- get_map(location = "paris", zoom=13, source = "stamen", maptype = maptypes[1]); ggmap(paris,darken=0.3)
+# adding Google Maps markers
+map <- get_map(loc, zoom=z, sources = "stamen", maptype = maptype, markers=latlon_df)
+ggmap(map)
+ggmap(map,extent="device") # plot without axes
 
-# cloudmade map
-paris <- get_map("paris", zoom=13, source = "cloudmade", maptype = 53428, api_key = api_key)
-# ggmap(paris)
+```
 
-# using googleway pck
-# https://github.com/SymbolixAU/googleway/blob/master/vignettes/googleway-vignette.Rmd
-google_map(api_key,location=loc)
+The below map list plots examples of the different maptypes and sources available 
+```{r , eval=F}
+
+# redo map list? uses API requests, so check loaded file first 
+save_map_list <- 0 # 1 = already saved
+
+# diff map types
+maptypes
+sources
+
+if(save_map_list==1){
+  layout(matrix(1:length(maptypes), 4, 4, byrow = TRUE)) # set plot window
+  sc <- 1 # sources counter
+  map_list <- list()
+  for(m in 1:length(maptypes)){
+    map <- get_map(loc, zoom=12, sources = sources[sc], maptype = maptypes[m])
+    map_list[[length(map_list)+1]] <- map
+    if(sc == 4){sc <- 1}else{sc = sc + 1}
+  }
+  saveRDS(map_list,paste0(getwd(),"/map_list.Rda")) # save to file
+}else{ 
+  saved_maps <- readRDS("map_list.Rda") # load saved map list
+}# end save_map_list
+
+mm <- 11 # choose map type
+ggmap(saved_maps[[mm]],darken=0.3,extent="device")
+
+# loop through maps  
+mm <- 2
+for(mm in 1:length(saved_maps)){
+  pdf(paste0("map_list_",mm,".pdf"), onefile = T,paper="a4")
+  ggmap(saved_maps[[mm]],darken=0.3,extent="device")
+  title(attr(saved_maps[[3]],"source"), attr(saved_maps[[3]],"source"))
+  dev.off()
+}
+
+# add title to maps
+attr(saved_maps[[3]],"source")
+attr(saved_maps[[3]],"maptype")
+
 
 ### applying data points ###
 # qmplot
@@ -236,6 +316,57 @@ murder <- subset(crime, offense == "murder")
 qmplot(lon, lat, zoom = 11, data = murder, source=source,colour = I('pink'), size = I(2), darken = .3) 
 
 ```
+
+Example of route plotted on terrain map  
+```{r}
+# http://eriqande.github.io/rep-res-web/lectures/making-maps-with-R.html
+
+# head(bike)
+#>         lon      lat elevation                 time
+#> 1 -122.0646 36.95144      15.8 2011-12-08T19:37:56Z
+#> 2 -122.0646 36.95191      15.5 2011-12-08T19:37:59Z
+#> 3 -122.0645 36.95201      15.4 2011-12-08T19:38:04Z
+#> 4 -122.0645 36.95218      15.5 2011-12-08T19:38:07Z
+#> 5 -122.0643 36.95224      15.7 2011-12-08T19:38:10Z
+#> 6 -122.0642 36.95233      15.8 2011-12-08T19:38:13Z
+
+bikemap1 <- get_map(location = c(-122.080954, 36.971709), maptype = "terrain", source = "google", zoom = 14)
+
+ggmap(bikemap1) + 
+  geom_path(data = bike, aes(color = elevation), size = 3, lineend = "round") + 
+  scale_color_gradientn(colours = rainbow(7), breaks = seq(25, 200, by = 25))
+```
+
+Heatmap example
+```{r}
+# https://blog.dominodatalab.com/geographic-visualization-with-rs-ggmaps/
+# Package source URL: http://cran.r-project.org/web/packages/ggmap/ggmap.pdf
+# Data source URL: http://www.geo.ut.ee/aasa/LOOM02331/heatmap_in_R.html
+ 
+install.packages("ggmap")
+library(ggmap)
+ 
+# load the data
+tartu_housing <- read.csv("data/tartu_housing_xy_wgs84_a.csv", sep = ";")
+ 
+# Download the base map
+tartu_map_g_str <- get_map(location = "tartu", zoom = 13)
+# Draw the heat map
+ggmap(tartu_map_g_str, extent = "device") + geom_density2d(data = tartu_housing, aes(x = lon, y = lat), size = 0.3) + 
+  stat_density2d(data = tartu_housing, 
+                 aes(x = lon, y = lat, fill = ..level.., alpha = ..level..), size = 0.01, 
+                 bins = 16, geom = "polygon") + scale_fill_gradient(low = "green", high = "red") + 
+  scale_alpha(range = c(0, 0.3), guide = FALSE)
+
+```
+
+Leaflet example  
+```{r}
+# https://blog.dominodatalab.com/applied-spatial-data-science-with-r/
+# cloud maps and stacking map layers to create your own  
+# https://rstudio.github.io/leaflet/basemaps.html
+```
+
 
 #### My Google Maps data   
 
@@ -421,6 +552,16 @@ gc <- geocode(location,
 Google only allows you a certain amount of memory to use its geocode data for each session. After this threshold, you can no longer call the data. To check how many geocode queries you have remaining from Google, type the following:  
 ```{r}
 geocodeQueryCheck() 
+```
+
+The `googleway` package
+```{r}
+# using googleway pck
+# https://github.com/SymbolixAU/googleway/blob/master/vignettes/googleway-vignette.Rmd
+require(googleway)
+loc <- "Medellin"
+google_map(api_key,location=loc)
+
 ```
 
 ### Links and tutorials  
