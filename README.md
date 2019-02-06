@@ -3,7 +3,7 @@
 
 ##### <sup>1</sup> _Department of Biology, Emory University, 1510 Clifton Road NE, Atlanta, GA, USA, 30322_
 
-##### *Corresponding author: matthew.malishev@gmail.com      
+##### *Corresponding author: matthew.malishev [at] gmail.com      
 
 Versions:  
  - R 3.5.0  
@@ -27,7 +27,7 @@ File extensions:
 ******  
 
 ### :pig: Troubleshooting :pig:     
-If problems persist, feel free to contact me at matthew.malishev@gmail.com     
+If problems persist, feel free to contact me at matthew.malishev [at] gmail.com     
   
 For Mac OSX > 10 (El Capitan)  
 

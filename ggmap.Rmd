@@ -360,6 +360,12 @@ ggmap(tartu_map_g_str, extent = "device") + geom_density2d(data = tartu_housing,
 
 ```
 
+Geographic path mapping  
+```{r}
+# https://flowingdata.com/2014/02/05/where-people-run/
+```
+
+
 Leaflet example  
 ```{r}
 # https://blog.dominodatalab.com/applied-spatial-data-science-with-r/
