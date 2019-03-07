@@ -208,6 +208,7 @@ register_google(key = api_key) # register key
 ```
 
 Geocoding API test. Run the below steps and [see here for troubleshooting.](https://stackoverflow.com/questions/51481913/error-when-mapping-in-ggmap-with-api-key-403-forbidden/52617264#52617264)  
+
 ```{r}
 # should spit out a bunch of r dataframe objects
 geocode("Melbourne", output = "all")
@@ -224,9 +225,9 @@ require(ggmap)
 # https://github.com/dkahle/ggmap/issues/213
 
 # enter location
-loc <- "Melbourne" # enter location on globe 
+loc <- "Naroibi" # enter location on globe 
 loc_stats <- geocode(loc,output="all",override_limit = FALSE) # see all available data using geocode function 
-map <- get_map(loc2) # convert to get_map object
+map <- get_map(loc) # convert to get_map object
 ggmap(map)
 
 # takes multiple inputs that can also be colloquial
@@ -240,9 +241,9 @@ df %>% mutate_geocode(addies)
 # plot with specs 
 map <- get_map(addies[1], zoom = zoom, source = source, maptype = maptype) # get map 
 
-zoom <- 12 # 10 = metropolitan level, 18 = street level. 12 is a useable city level
+zoom <- 6 # 10 = metropolitan level, 18 = street level. 12 is a useable city level
 source <- "stamen"
-maptype <- "toner-2010"
+maptype <- "toner"
 bg <- "white" # set background color
 
 map <- get_map(loc, zoom = zoom, source = source, maptype = maptype) # get map to plot
@@ -258,9 +259,9 @@ ggmap(map,
       legend="topright",
       extent="device",
       padding=0.5,
-      darken=c(0.3,bg) # 0.1 = high contrast
+      darken=c(0.5,bg) # 0.1 = high contrast
       ) + 
-  geom_point(aes(latlon_df[,1],latlon_df[,2],color=I("pink")),data=latlon_df)
+  geom_point(aes(latlon_df[,1],latlon_df[,2],color=I("pink")),cex=3,data=latlon_df)
 
 # adding Google Maps markers
 map <- get_map(loc, zoom=z, sources = "stamen", maptype = maptype, markers=latlon_df)
@@ -371,6 +372,23 @@ Leaflet example
 # https://blog.dominodatalab.com/applied-spatial-data-science-with-r/
 # cloud maps and stacking map layers to create your own  
 # https://rstudio.github.io/leaflet/basemaps.html
+
+
+# leaflet  
+map <- leaflet() # create a leaflet map object
+str(map)
+map <- addTiles(map) # add the map tiles to the leaflet object
+addCircles(map, latlon_df[,1],latlon_df[,2],
+           radius = 5,
+           stroke = TRUE,
+           weight = 10, 
+           opacity = alpha,
+           color = col_site,
+           fillColor = "green",
+           label=addies,
+           popup=addies,
+           data=addies)
+
 ```
 
 
