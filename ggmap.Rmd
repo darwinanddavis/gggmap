@@ -374,20 +374,89 @@ Leaflet example
 # https://rstudio.github.io/leaflet/basemaps.html
 
 
-# leaflet  
-map <- leaflet() # create a leaflet map object
-str(map)
-map <- addTiles(map) # add the map tiles to the leaflet object
-addCircles(map, latlon_df[,1],latlon_df[,2],
-           radius = 5,
-           stroke = TRUE,
-           weight = 10, 
-           opacity = alpha,
-           color = col_site,
-           fillColor = "green",
-           label=addies,
-           popup=addies,
-           data=addies)
+###########################################################################
+######################################## leaflet ##########################
+###########################################################################
+
+# load data
+site_names <- c("Kisumu","Lake Jipe","Kinango")
+kisumu <- c(-0.0917,34.7680)
+lake_jipe <- c(-3.6019,37.7557)
+kinango <- c(-4.1393,39.3180)
+latlon <- t(data.frame(kisumu,lake_jipe,kinango))
+colnames(latlon) <- c("lat", "lng") # need to be named this
+latlon
+
+############################ creating maps ############################
+
+# useful help pages
+?addCircles
+
+### default maps
+map <- leaflet() # initiate the leaflet map object
+map <- addTiles(map) # add the actual map tiles to the leaflet object
+map <- addCircles(map,sample(35,20,replace=T),sample(35,20,replace=T)) # generate some random data around lat/lon 35
+map
+
+### custom map 
+# add custom base layers 
+names(providers) # types of base maps available
+# some good custom layers
+# 37-48, 97-103, 
+provider_type <- names(providers)[37]
+provider_type2 <- "CartoDB.Positron"# "Stamen.Toner" # set the above input as the custom base
+col_site <- "red" # colour of site marker
+radius <- 5 # size of site marker
+zoom <- 6 # zoom level
+opac <- 1 # transparency of map elements
+weight <- 2 # width of poly lines
+fill_polygon <- TRUE # FALSE = just draw lines among points 
+
+
+map <- leaflet() # initiate the leaflet map object
+
+# find good zoom level 
+bl <- NULL # bottom left
+tl <- NULL # top left
+tr <- NULL # top right 
+br <- NULL # bottom right 
+map_aerial <- fitBounds(map, bl, tl, tr, br)
+
+# add the site locations 
+map <- addCircles(map, 
+                  lng = latlon[,"lng"],
+                  lat = latlon[,"lat"],
+                  radius = radius,
+                  stroke = TRUE,
+                  weight = weight, 
+                  opacity = opac,
+                  color = col_site,
+                  fillColor = col_site,
+                  label=site_names,
+                  popup=site_names,
+                  data=latlon)
+
+map <- addPolylines(map, 
+                  lng = latlon[,"lng"],
+                  lat = latlon[,"lat"],
+                  color = col_site,
+                  fillColor = col_site,
+                  fill = fill_polygon,
+                  weight = weight
+)
+
+
+# add custom map bases 
+map <- addProviderTiles(map, provider_type,
+                        options = providerTileOptions(opacity = opac) # add opacity to country lines
+                        )
+# plot
+map
+
+# add more map type layers on top of each other
+# !!! need to re-initiate map to see changes because it just stacks maps on top of each other
+map <- addProviderTiles(map, provider_type2)
+map
 
 ```
 
