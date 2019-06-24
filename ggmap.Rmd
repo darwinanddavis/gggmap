@@ -12,6 +12,13 @@ linkcolor: pink
 urlcolor: blue
 citecolor: red
 output:
+  html_document:
+    highlight: tango
+    code_folding: hide
+    toc: yes
+    toc_depth: 4
+    number_sections: no
+    toc_float: yes
   pdf_document:
     includes:
       in_header: # add .tex file with header content
@@ -27,13 +34,6 @@ output:
     citation_package: biblatex # natbib
     latex_engine: xelatex #pdflatex # lualatex
     keep_tex: true # keep .tex file in dir 
-  html_document:
-    highlight: tango
-    code_folding: hide
-    toc: yes
-    toc_depth: 4
-    number_sections: no
-    toc_float: yes
   word_document:
     highlight: tango
     keep_md: yes
@@ -74,7 +74,7 @@ vignette: >
 ```{r, set-options, echo = FALSE, cache = FALSE}
 options(width=100)
 knitr::opts_chunk$set(
- eval = TRUE, # run all code
+ eval = F, # run all code
  # echo = FALSE, # show code chunks in output 
  comment = "",
  tidy.opts=list(width.cutoff=100), # set width of code chunks in output
@@ -135,7 +135,7 @@ rm *.rdb # remove .rdb package
 
 ### Install packages  
 ```{r, load packages, include=T, cache=F, message=F, warning=F, results='hide'}
-packages <- c("animation","RColorBrewer","dplyr","ggmap","RgoogleMaps","sp","maptools","scales","rgdal","ggplot2","leaflet","jsonlite","readr","devtools")
+packages <- c("animation","RColorBrewer","dplyr","ggmap","RgoogleMaps","sp","maptools","scales","rgdal","ggplot2","leaflet","jsonlite","readr","devtools","mapdeck","gganimate","tmap")
 if (require(packages)) {
   # suppressPackageStartupMessages(
     install.packages(packages,dependencies = T)
@@ -203,7 +203,7 @@ sources <- c("google","osm","stamen","cloudmade");sources
 `get_map` plotting     
 Register your API key with your Google developer account 
 ```{r}
-api_key <- read_file("ayepeeeye.txt") 
+api_key <- readLines("ayepeeeye.txt") 
 register_google(key = api_key) # register key 
 ```
 
@@ -255,13 +255,16 @@ lon <- runif(100,lon-0.01,lon+0.01); lat <- runif(100,lat-0.01,lat+0.01)
 latlon_df <- data.frame(lon,lat)
 
 # plot map with geocode points   
-ggmap(map,
+naro <- ggmap(map,
       legend="topright",
       extent="device",
       padding=0.5,
       darken=c(0.5,bg) # 0.1 = high contrast
       ) + 
   geom_point(aes(latlon_df[,1],latlon_df[,2],color=I("pink")),cex=3,data=latlon_df)
+
+naro
+ggsave("ggmap_test.png",naro,width=11,height=16,unit="in",dpi=1000,limitsize=F)
 
 # adding Google Maps markers
 map <- get_map(loc, zoom=z, sources = "stamen", maptype = maptype, markers=latlon_df)
@@ -393,6 +396,7 @@ latlon
 ?addCircles
 
 ### default maps
+require(leaflet)
 map <- leaflet() # initiate the leaflet map object
 map <- addTiles(map) # add the actual map tiles to the leaflet object
 map <- addCircles(map,sample(35,20,replace=T),sample(35,20,replace=T)) # generate some random data around lat/lon 35
@@ -458,6 +462,25 @@ map
 map <- addProviderTiles(map, provider_type2)
 map
 
+# save to file 
+require(mapview)
+webshot::install_phantomjs() # need to install for mapshot()
+setwd("/Users/malishev/Documents/Data/gggmap/")
+
+mapshot(map, file = "mapshot_test.pdf",
+        vwidth=600,vheight=900,
+        remove_controls = c("zoomControl", "layersControl", "homeButton", "scaleBar"))
+
+# save as html widget 
+require(htmlwidgets)
+saveWidget(map,"mapshot.html")
+
+# to save to file
+  # generate plot
+  # expand to plot window
+  # right click > Open frame in new window
+  # Print icon > Save to PDF > High quality  
+
 ```
 
 
@@ -472,6 +495,7 @@ setwd(params$dir)
 require(jsonlite)
 data <- fromJSON("LocationHistory.json",simplifyDataFrame=T,flatten=T)
 data <- as.data.frame(data)
+head(data)
 colnames(data)[c(1,2,3)] <- c("TimeStamp","Lat","Lon")
 data <- data[!is.na(data$Lat),] # remove NA rows 
 head(data)
@@ -557,6 +581,7 @@ my_map <- function(location,zoom,source,maptype,bg,darken,colv,alpha){
     geom_point(aes(x = Lon, y = Lat,color=I(colv)),alpha=alpha, data=data)
 } # end function
 my_map(location,14,"stamen","toner","steel blue",0.3,"pink",0.5)
+
 ```
 
 #### Google Maps: `get_googlemap`  
@@ -657,6 +682,191 @@ google_map(api_key,location=loc)
 
 ```
 
+Reading in KMZ and KML data (My Google Maps)  
+```{r}
+
+# generate new map from my google maps
+# https://www.google.com/maps/d/u/0/edit?hl=en&mid=1vOwf8JGREFlxtYj6mQrrErtH-ZN59pYE&ll=33.02680253949511%2C-89.68289500000003&z=6
+
+# http://r-sig-geo.2731867.n2.nabble.com/reading-kmz-file-in-R-td5148622.html
+library(maptools) 
+getKMLcoordinates(textConnection(system("unzip -p /Users/foo/test.kmz", intern = TRUE))) 
+
+
+
+```
+
+
+Animating maps 
+
+```{r}
+install.packages("gganimate")
+install.packages("tmap")
+require(tmap);require(gganimate)
+??tmap_animation
+
+# https://bookdown.org/robinlovelace/geocompr/adv-map.html
+
+```
+
+3D maps  
+```{r}
+# https://bookdown.org/robinlovelace/geocompr/adv-map.html
+# @mapdeck
+install.packages("mapdeck")
+install.packages("usethis")
+
+library(mapdeck)
+mb_key <- readLines("mb.txt")
+
+set_token(Sys.getenv(mb_key))
+df = read.csv("https://git.io/geocompr-mapdeck")
+df <- df[ !is.na(df$lng ), ]
+df <- df[ !is.na(df$lat ), ]
+
+ms = mapdeck_style("dark")
+mapdeck(style = ms, token = mb_key, pitch = 45, location = c(0, 52), zoom = 4) %>%
+add_grid(data = df, lat = "lat", lon = "lng", cell_size = 1000,
+         elevation_scale = 50, layer_id = "grid_layer",
+         colour_range = viridisLite::plasma(6))
+
+
+```
+
+Add Google driving routes (paths/routes/poly lines)
+
+```{r}
+# https://stackoverflow.com/questions/44283774/flow-maptravel-path-using-lat-and-long-in-r
+require(googleway)
+df = read.csv("https://git.io/geocompr-mapdeck")
+df = df[1:500,] # truncate data 
+
+df$drivingRoute <- lst_directions <- apply(df, 1, function(x){
+    orig <- as.numeric(c(x['lat'], x['lng']))
+    dest <- as.numeric(c(x['lat'], x['lng']))
+
+    dir <- google_directions(origin = orig, destination = dest, key =  api_key)
+    dir$routes$overview_polyline$points
+})
+
+style <- '[ { "stylers": [{ "visibility": "simplified"}]},{"stylers": [{"color": "#131314"}]},{"featureType": "water","stylers": [{"color": "#131313"},{"lightness": 7}]},{"elementType": "labels.text.fill","stylers": [{"visibility": "on"},{"lightness": 25}]}]'
+
+
+google_map(key = api_key, style = style) %>%
+    add_polylines(data = df, 
+      polyline = "drivingRoute", 
+      mouse_over_group = "lat",
+      stroke_weight = 0.7,  
+      stroke_opacity = 0.5, 
+      stroke_colour = "#FF3333")
+
+?add_polylines
+
+```
+
+Create map connections e.g. flight paths, curves 
+
+```{r}
+# https://flowingdata.com/2011/05/11/how-to-map-connections-with-great-circles/
+require(maps)
+require(geosphere)
+
+plot.new() # needed for 'lines()' function later  
+map('state', region = c('new york', 'new jersey', 'penn'))	# map of three states
+
+map("world")
+xlim <- c(-171.738281, -56.601563)
+ylim <- c(12.039321, 71.856229)
+map("world", col="#f2f2f2", fill=TRUE, bg="white", lwd=0.05, xlim=xlim, ylim=ylim)
+
+lat_ca <- 39.164141
+lon_ca <- -121.640625
+lat_me <- 45.213004
+lon_me <- -68.906250
+inter <- gcIntermediate(c(lon_ca, lat_ca), c(lon_me, lat_me), n=50, addStartEnd=TRUE) # get intermediate way points
+lines(inter)
+
+# further steps found at link ...
+
+# option 2
+# https://lucidmanager.org/create-air-travel-route-maps/
+
+
+```
+
+High res world maps  
+
+```{r}
+# https://hecate.hakai.org/rguide/mapping-in-r.html
+
+# install.packages("mapdata")
+# install.packages("ggsn")
+# install.packages("here")
+require(mapdata) # high res data
+require(ggsn) # north symbols and scale bars
+require(mapview)
+require(mapproj)
+require(here)
+require(ggthemes)
+require(ggmap)
+
+
+# get high res map
+# get locations 
+# get google path lat lon
+# geom_path(data = bike, aes(color = elevation), size = 3, lineend = "round") + 
+#   scale_color_gradientn(colours = rainbow(7), breaks = seq(25, 200, by = 25))
+
+# high res
+d <- map_data("worldHires", c("Colombia","Ecuador"))
+str(d)
+
+# get latlon
+location <- "Cali"
+gc <- geocode(location, 
+              output = "latlon", # "latlon", "latlona", "more", "all"
+              source="google" # "google" or "dsk"
+              ) 
+gc
+
+dput(par(no.readonly=TRUE)) # reset graphical params (doesn't work for ggplot)
+par()
+
+pdf(paste0(here(),"/worldhires_test.pdf"),onefile=T,width=11.7,height=16.5,paper="a4r")
+
+ggplot(d) + 
+  geom_polygon(aes(x=long, y = lat, group = group)) + 
+  geom_point(data=gc,mapping=aes(lon,lat,col="#f33333")) +
+  theme_tufte() +
+  coord_map("mercator") 
+
+dev.off()
+
+# for "conic"
+d <- map_data("worldHires", c("Canada", "usa", "Mexico")) 
+ggplot(d) + 
+  geom_polygon(aes(x=long, y = lat, group = group)) + 
+  theme_bw() +
+  coord_map("conic", lat0 = 18, xlim=c(210, 237), ylim=c(46,62))
+
+
+map
+
+
+```
+
+
+### Animated flight paths and travel history
+```{r}
+# download latlon for airport cities from `MUCflights` package  
+# stitch together travel history with get_paths and  `ffmpeg` and `mapmate`
+# http://www.minchunzhou.com/travelhistory.html
+```
+
+
+
+
+
 ### Links and tutorials  
 \ 
 #### `rjson`  
@@ -674,7 +884,25 @@ amdam <- read.csv("amdam.csv",header=T,sep=",",stringsAsFactors = T)
 str(amdam)
 ll <- amdam[1,]
 names(ll)
+names(amdam)
 ll <- ll[,c("latitude","longitude")]
+par(bg="black")
+plot(subset(amdam,select = c("latitude","longitude")),pch=20,cex=rpm/10,col=adjustcolor("purple",0.3))
+unique(amdam$number_of_reviews)
+rpm = unique(round(amdam$reviews_per_month))
+rpm[is.na(rpm)] = 1
+rpm = rpm + 1
+
+
+```
+
+
+#### `mapview`  
+Using the `mapview` package (interactive) 
+```{r}
+install.packages("mapview")
+library(mapview)
+mapview(breweries) # show breweries data in EU
 
 ```
 
@@ -753,7 +981,7 @@ ggplot(fourCorners, aes(x = lon, y = lat) ) +
 ```
 
 
-```{r eval=T, echo=T}
+```{r}
 
 location <- "Melbourne"
 apikey <-  ""
@@ -763,7 +991,7 @@ lat <- geocode(loc)[,2]
 points <- data.frame("lon"=c(lon,lon+0.05),"lat"=c(lat,lat+0.0002));points
 ```
 
-```{r eval=T, echo=T}
+```{r}
 
 zoom <-   
 source <- 
