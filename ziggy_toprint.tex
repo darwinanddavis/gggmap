@@ -1,0 +1,204 @@
+\documentclass[10,portrait]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage[]{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\PassOptionsToPackage{hyphens}{url} % url is loaded by hyperref
+\usepackage[unicode=true]{hyperref}
+\PassOptionsToPackage{usenames,dvipsnames}{color} % color is loaded by hyperref
+\hypersetup{
+            pdftitle={Ziggy R script},
+            colorlinks=true,
+            linkcolor=blue,
+            citecolor=red,
+            urlcolor=blue,
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\usepackage[margin=1in]{geometry}
+\usepackage[]{biblatex}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{0}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+% set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+
+
+\title{Ziggy \texttt{R} script}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{verbatim}
+R version 3.5.0 (2018-04-23)
+Platform: x86_64-apple-darwin15.6.0 (64-bit)
+Running under: OS X El Capitan 10.11.6
+
+Matrix products: default
+BLAS: /Library/Frameworks/R.framework/Versions/3.5/Resources/lib/libRblas.0.dylib
+LAPACK: /Library/Frameworks/R.framework/Versions/3.5/Resources/lib/libRlapack.dylib
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+loaded via a namespace (and not attached):
+ [1] compiler_3.5.0  tools_3.5.0     htmltools_0.3.6 pillar_1.3.1    rstudioapi_0.7  tibble_2.1.1   
+ [7] yaml_2.2.0      crayon_1.3.4    Rcpp_1.0.1      rmarkdown_1.12  knitr_1.22      xfun_0.6       
+[13] digest_0.6.18   pkgconfig_2.0.2 rlang_0.3.4     evaluate_0.14  
+\end{verbatim}
+
+~
+
+\subsection{Packages used}\label{packages-used}
+
+\begin{verbatim}
+[[1]]
+ [1] "evaluate"     "animation"    "RColorBrewer" "dplyr"        "ggmap"        "RgoogleMaps" 
+ [7] "sp"           "maptools"     "scales"       "rgdal"        "ggplot2"      "leaflet"     
+[13] "jsonlite"     "readr"        "devtools"     "mapdata"      "ggsn"         "mapview"     
+[19] "mapproj"      "ggthemes"     "reshape2"     "grid"        
+\end{verbatim}
+
+\newpage  
+
+\subsection{Script}\label{script}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# read in data ------------------------------------------------------------}
+\NormalTok{countries <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{"Colombia"}\NormalTok{,}\StringTok{"Ecuador"}\NormalTok{,}\StringTok{"Peru"}\NormalTok{,}\StringTok{"Panama"}\NormalTok{)}
+\CommentTok{# read in kml data from my google maps (drive route)}
+\NormalTok{zp <-}\StringTok{ }\NormalTok{sf}\OperatorTok{::}\KeywordTok{st_read}\NormalTok{(}\StringTok{"ziggy.kml"}\NormalTok{)}
+\NormalTok{secondary_paths <-}\StringTok{ }\NormalTok{sf}\OperatorTok{::}\KeywordTok{st_read}\NormalTok{(}\StringTok{"secondary_paths.kml"}\NormalTok{)}
+\CommentTok{# get city coords}
+\NormalTok{city_df <-}\StringTok{ }\KeywordTok{c}\NormalTok{()}
+\ControlFlowTok{for}\NormalTok{(ll }\ControlFlowTok{in} \DecValTok{2}\OperatorTok{:}\KeywordTok{length}\NormalTok{(zp}\OperatorTok{$}\NormalTok{Name))\{}
+\NormalTok{  city <-}\StringTok{ }\KeywordTok{unlist}\NormalTok{(}\KeywordTok{subset}\NormalTok{(zp,Name}\OperatorTok{==}\KeywordTok{as.character}\NormalTok{(zp}\OperatorTok{$}\NormalTok{Name[ll]))}\OperatorTok{$}\NormalTok{geometry)}
+\NormalTok{  city <-}\StringTok{ }\NormalTok{city[}\DecValTok{2}\OperatorTok{:}\DecValTok{1}\NormalTok{] }\CommentTok{# remove stupid zero}
+\NormalTok{  city_df <-}\StringTok{ }\KeywordTok{rbind}\NormalTok{(city_df,city)}
+\NormalTok{  city_df <-}\StringTok{ }\NormalTok{city_df }\OperatorTok{%>%}\StringTok{ }\KeywordTok{data.frame}\NormalTok{()}
+\NormalTok{\}}
+\KeywordTok{colnames}\NormalTok{(city_df) <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{"lat"}\NormalTok{,}\StringTok{"lon"}\NormalTok{)}
+\CommentTok{# high res map}
+\NormalTok{d <-}\StringTok{ }\KeywordTok{map_data}\NormalTok{(}\StringTok{"worldHires"}\NormalTok{, countries)}
+\CommentTok{# get latlon (uses api key) }
+\NormalTok{location <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{"Medellin"}\NormalTok{,}\StringTok{"Bogotá"}\NormalTok{)}
+\NormalTok{city_secondary <-}\StringTok{ }\KeywordTok{geocode}\NormalTok{(location, }
+                          \DataTypeTok{output =} \StringTok{"latlon"}\NormalTok{, }
+                          \DataTypeTok{source=}\StringTok{"google"}
+\NormalTok{                          ) }
+\NormalTok{city_secondary <-}\StringTok{ }\NormalTok{city_secondary }\OperatorTok{%>%}\StringTok{ }\KeywordTok{data.frame}\NormalTok{()}
+\CommentTok{# plot --------------------------------------------------------------------}
+\KeywordTok{dput}\NormalTok{(}\KeywordTok{par}\NormalTok{(}\DataTypeTok{no.readonly=}\OtherTok{TRUE}\NormalTok{)) }\CommentTok{# reset graphical params}
+\KeywordTok{par}\NormalTok{()}
+\CommentTok{# colour palettes }
+\NormalTok{bg <-}\StringTok{ "#f2f0ee"} 
+\NormalTok{fg <-}\StringTok{ "#10163c"} 
+\NormalTok{path_col <-}\StringTok{ "#f4d29f"} 
+\NormalTok{border_col <-}\StringTok{ "c7d2f5"} 
+\NormalTok{city_size <-}\StringTok{ }\DecValTok{5}
+\NormalTok{path_size <-}\StringTok{ }\FloatTok{0.7}
+\CommentTok{# plot }
+\KeywordTok{ggplot}\NormalTok{() }\OperatorTok{+}\StringTok{ }\CommentTok{# initiate plot dev}
+\StringTok{  }\KeywordTok{geom_polygon}\NormalTok{(}\DataTypeTok{data=}\NormalTok{d,}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x=}\NormalTok{long, }\DataTypeTok{y=}\NormalTok{lat, }\DataTypeTok{group =}\NormalTok{ group), }
+               \DataTypeTok{fill =}\NormalTok{ fg, }\DataTypeTok{col=}\NormalTok{border_col,}\DataTypeTok{size=}\FloatTok{0.1}\NormalTok{) }\OperatorTok{+}\StringTok{ }\CommentTok{# add map polygon}
+\StringTok{  }\KeywordTok{geom_sf}\NormalTok{(}\DataTypeTok{data=}\NormalTok{zp,}\DataTypeTok{color=}\NormalTok{path_col,}\DataTypeTok{size=}\NormalTok{path_size) }\OperatorTok{+}\StringTok{ }\CommentTok{# add ziggy path}
+\StringTok{  }\KeywordTok{geom_point}\NormalTok{(}\DataTypeTok{data=}\NormalTok{city_df,}\KeywordTok{aes}\NormalTok{(lon,lat),}
+             \DataTypeTok{col=}\NormalTok{path_col,}\DataTypeTok{size=}\NormalTok{city_size) }\OperatorTok{+}\StringTok{ }\CommentTok{# add cities}
+\StringTok{  }\KeywordTok{geom_point}\NormalTok{(}\DataTypeTok{data=}\NormalTok{city_secondary,}\KeywordTok{aes}\NormalTok{(lon,lat),}\DataTypeTok{shape=}\DecValTok{21}\NormalTok{,}
+             \DataTypeTok{fill=}\NormalTok{path_col,}\DataTypeTok{color=}\NormalTok{path_col,}\DataTypeTok{size=}\NormalTok{city_size) }\OperatorTok{+}\StringTok{ }\CommentTok{# add secondary cities}
+\StringTok{  }\KeywordTok{coord_sf}\NormalTok{(}\DataTypeTok{xlim=}\KeywordTok{c}\NormalTok{(}\OperatorTok{-}\DecValTok{75}\NormalTok{,}\OperatorTok{-}\DecValTok{81}\NormalTok{),}\DataTypeTok{ylim=}\KeywordTok{c}\NormalTok{(}\OperatorTok{-}\DecValTok{2}\NormalTok{,}\DecValTok{8}\NormalTok{)) }\OperatorTok{+}\StringTok{ }\CommentTok{# zoom window  }
+\StringTok{  }\KeywordTok{theme_nothing}\NormalTok{() }\OperatorTok{+}\StringTok{ }\CommentTok{# set minimal theme }
+\StringTok{  }\KeywordTok{theme}\NormalTok{( }\CommentTok{# panels}
+    \DataTypeTok{panel.grid.major =} \KeywordTok{element_line}\NormalTok{(}\DataTypeTok{colour =}\NormalTok{ bg),}
+    \DataTypeTok{panel.ontop =}\NormalTok{ F, }\CommentTok{# to toggle panel grid visibility}
+    \DataTypeTok{plot.background =} \KeywordTok{element_rect}\NormalTok{(}\DataTypeTok{fill =}\NormalTok{ bg)) }
+\CommentTok{# save to dir}
+\KeywordTok{ggsave}\NormalTok{(}\KeywordTok{paste0}\NormalTok{(}\StringTok{"ziggy_"}\NormalTok{,bg,}\StringTok{"_"}\NormalTok{,fg,}\StringTok{"_"}\NormalTok{,path_col,}\StringTok{".pdf"}\NormalTok{)}
+\NormalTok{       , }\DataTypeTok{width =} \DecValTok{9}\NormalTok{, }\DataTypeTok{height =} \DecValTok{15}\NormalTok{, }\DataTypeTok{dpi =} \StringTok{"retina"}\NormalTok{, }\DataTypeTok{limitsize =}\NormalTok{ F)}
+\end{Highlighting}
+\end{Shaded}
+
+\printbibliography
+
+\end{document}

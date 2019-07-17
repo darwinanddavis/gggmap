@@ -1,0 +1,218 @@
+---
+title: My Google Timeline data with ` `r params$package` `   
+author: |
+ | Matthew Malishev  
+ |  
+ | @darwinanddavis  
+ | 
+#bibliography:/Users/malishev/Documents/Melbourne Uni/Thesis_2016/library.bib
+fontsize: 10
+geometry: margin=1in
+documentclass: article
+linkcolor: blue
+urlcolor: blue
+citecolor: red
+output:
+  html_document:
+    highlight: tango
+    code_folding: show
+    toc: yes
+    toc_depth: 4
+    number_sections: no
+    toc_float: yes
+  pdf_document:
+    includes:
+      in_header: # add .tex file with header content
+    highlight: tango
+    template: null
+    toc: yes
+    toc_depth: 4
+    number_sections: false
+    fig_width: 4
+    fig_height: 5
+    fig_caption: true
+    df_print: tibble 
+    citation_package: biblatex # natbib
+    latex_engine: xelatex #pdflatex # lualatex
+    keep_tex: true # keep .tex file in dir 
+  word_document:
+    highlight: tango
+    keep_md: yes
+    pandoc_args: --smart
+    #reference: mystyles.docx
+    toc: yes
+inludes:
+  before_body: before_body.tex
+subtitle: 
+tags:
+- nothing
+- nothingness
+params: 
+  package: "mapdeck"
+  dir: "/Users/malishev/Documents/Data/gggmap"
+  date: !r Sys.Date()
+  session: !r sessionInfo()  
+  version: !r getRversion()
+  email: "matthew.malishev@gmail.com"
+  doi: https://github.com/darwinanddavis/UsefulCode
+classoption: portrait
+# ^['https://github.com/darwinanddavis/UsefulCode'] # footnote
+vignette: >
+  %\VignetteIndexEntry{Useful R code}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+---
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({ TeX: { equationNumbers: {autoNumber: "all"} } });
+</script>
+
+```{r echo = FALSE}
+# library(rmarkdown)
+# setwd("")
+# f <- list.files()[1]
+# render(f, output_format='pdf_document')
+```
+
+```{r, set-options, echo = FALSE, cache = FALSE}
+options(width=100)
+knitr::opts_chunk$set(
+ eval = TRUE, # run all code
+ # echo = FALSE, # show code chunks in output 
+ comment = "",
+ tidy.opts=list(width.cutoff=100), # set width of code chunks in output
+ tidy=TRUE, # make output as tidy
+ message = FALSE,  # mask all messages
+ warning = FALSE, # mask all warnings 
+ size="small" # set code chunk size
+)
+
+# https://github.com/ucb-stat133/stat133-fall-2016/blob/master/hws/hw02-tables-ggplot.Rmd
+knitr::opts_knit$set(root.dir=paste0(params$dir,"/")) # set working dir
+
+setwd(paste0(params$dir,"/")) # for running just in R not knitr
+```
+
+\newpage   
+
+Date: `r params$date`  
+R version: `r params$version`  
+*Corresponding author: `r params$email`  
+This document can be found at `r params$doi`  
+
+\  
+
+R session info 
+
+```{r, echo=F,aval=F}
+params$session
+```      
+
+\newpage  
+
+## Types of input data  
+sf  
+geojson  
+
+
+## Overview
+
+My Google timeline data with `r params$package`. 
+
+**Need to export as HTML, then open in internet browser.**    
+
+Install dependencies  
+```{r, load packages, include=T, cache=F, message=F, warning=F, results='hide'}
+packages <- c("pacman")   
+if (require(packages)) {
+    install.packages(packages,dependencies = T)
+    require(packages)
+}
+lapply(packages,library,character.only=T)
+p_load(dplyr,mapdeck,googleway)
+```
+
+Read in data  
+```{r}
+url <- url <- 'https://raw.githubusercontent.com/plotly/datasets/master/2011_february_aa_flight_paths.csv'
+flights <- read.csv(url)
+glimpse(flights)
+
+# data example ------------------------------------------------------------
+# create new info vec for labels  
+flights$info <- paste0("<b>",flights$airport1, " - ", flights$airport2, "</b>")
+```
+
+Have you already initiated the mapdeck gl?  
+```{r}
+usedmapkey <- 1 # 1 = int mapdeck function using mapkey once for each session, 0 = init again (for new r session or map)
+```
+
+Data inputs  
+```{r}
+my_data = flights
+mapkey <- readLines("mb.txt") # read in your mapkey
+set_token(mapkey) # set mapdeck globally for future sessions    
+# create style #  https://studio.mapbox.com/
+my_style <- "mapbox://styles/darwinanddavis/cjy1slolu144l1cr9407s5uep/draft" # draft style  
+width <- 1000
+height <- 1000
+padding <- 0
+pitch <- 75
+
+radius <- 5
+fill_colour <- "#5ED2DB"
+highlight_colour <- "#CC000000" # needs to be hexcode with alpha prefix  
+palette <- list(fill_colour = "magma") # see colourvalues::colour_palettes()
+fill_opacity <- 20 # 0:255
+auto_highlight <- T # highlight on hover
+transitions <- list(position = 2000, fill_colour = 1000) # transitions takes this form 
+```
+
+Set data inputs  
+```{r}
+# data 
+# needs to be a col so create new cols with more approprite names  
+my_data[,"lat"] <-  my_data[,"start_lat"]
+my_data[,"lon"] <- my_data[,"start_lon"]
+my_data[,"elevation"] <- sample(10000:10000000, size = nrow(my_data),replace=T) 
+my_data[,"opacity"] <- sample(1:255, size = nrow(my_data),replace=T) 
+id_point <- "point_1" # change with each layer
+id_arc <- "arc_1" # change with each layer
+id_poly <- "poly_1" # change with each layer
+```
+
+Plot  
+```{r}
+# plot --------------------------------------------------------------------
+# save to html to view OR viewer > new window
+if(usedmapkey==0){
+  p <- mapdeck(my_data, 
+               style = my_style,
+               width = width,
+               height = height,
+               padding = padding,
+               pitch = pitch)
+}
+
+# point cloud
+p <- p %>% 
+  add_pointcloud(lat = "lat", 
+                 lon = "lon",
+                 elevation = "elevation",
+                 layer_id = id_point,
+                 radius = radius, 
+                 fill_colour = fill_colour,
+                 fill_opacity = "opacity",
+                 auto_highlight = auto_highlight, 
+                 highlight_colour = highlight_colour,
+                 tooltip = "info",
+                 palette = palette,
+                 update_view = T
+                 # ---- extra stuff
+                 # light_settings = light
+                 # transitions = transitions
+  )  
+p
+```
+

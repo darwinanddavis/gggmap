@@ -13,7 +13,7 @@ Versions:
 
 This document converts __.json__ Google Maps data into useable `R` data for mining and plotting with `ggmap` and related packages. It also has links to obtaining Google API keys for using Google-protected data.  
 
-[**See it in action.**](http://htmlpreview.github.com/?https://github.com/darwinanddavis/ggmap/blob/master/ggmap.html)  
+[**See it in action.**](http://htmlpreview.github.com/?https://raw.githubusercontent.com/darwinanddavis/gggmap/master/ggmap.html)      
 
 File extensions:   
 .R  

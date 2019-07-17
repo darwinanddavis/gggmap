@@ -391,9 +391,8 @@ colnames(latlon) <- c("lat", "lng") # need to be named this
 latlon
 
 ############################ creating maps ############################
-
-# useful help pages
-?addCircles
+# gallery of map styles  
+# https://leaflet-extras.github.io/leaflet-providers/preview/
 
 ### default maps
 require(leaflet)
@@ -539,7 +538,7 @@ vignette('rworldmap')
 
 ```{r}
 
-location <- "" # enter location on globe or leave blank to get map from your own data points   
+location <- "Atlanta" # enter location on globe or leave blank to get map from your own data points   
 api_key <- "" # enter API key
 
 ```

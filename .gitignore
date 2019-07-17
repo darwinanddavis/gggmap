@@ -4,7 +4,7 @@
 *.osm
 *.csv
 *.json
+*.txt
 DeducerSpatial.pdf
 ggmap-SpatialVisualizationggplot2.pdf
-ayepeeeye.txt
 .Rproj.user
