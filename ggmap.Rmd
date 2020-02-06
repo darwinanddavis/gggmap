@@ -135,7 +135,7 @@ rm *.rdb # remove .rdb package
 
 ### Install packages  
 ```{r, load packages, include=T, cache=F, message=F, warning=F, results='hide'}
-packages <- c("animation","RColorBrewer","dplyr","ggmap","RgoogleMaps","sp","maptools","scales","rgdal","ggplot2","leaflet","jsonlite","readr","devtools","mapdeck","gganimate","tmap")
+packages <- c("animation","RColorBrewer","dplyr","ggmap","RgoogleMaps","sp","maptools","scales","rgdal","ggplot2","leaflet","jsonlite","readr","devtools","mapdeck","gganimate","tmap","maps")
 if (require(packages)) {
   # suppressPackageStartupMessages(
     install.packages(packages,dependencies = T)
@@ -352,7 +352,7 @@ library(ggmap)
  
 # load the data
 tartu_housing <- read.csv("data/tartu_housing_xy_wgs84_a.csv", sep = ";")
- 
+
 # Download the base map
 tartu_map_g_str <- get_map(location = "tartu", zoom = 13)
 # Draw the heat map
@@ -502,11 +502,12 @@ with(data,plot(Lat,Lon,type="l",lwd=3,col="steel blue"))
 
 # to access activity type in data, e.g. still, tilting, etc ...
 ## this only uses csv (converts json to csv externally) https://konklone.io/json/
-f <- list.files(pattern = "*.csv")[2]
+f <- list.files(pattern = "melb.csv")
 data <- read.csv(f,header=T,sep=",",stringsAsFactors = T)
 data <- as.data.frame(data)
 colnames(data)[c(1,2,3)] <- c("TimeStamp","Lat","Lon")
 data <- data[!is.na(data$Lat),] # remove NA rows 
+data %>% tail
 # make latlon into degrees
 require(stringi)
 stri_sub(data$Lat, 4, 2) <- "." ; data$Lat <- sapply(data$Lat,as.numeric) 
@@ -546,7 +547,20 @@ api_key <- "" # enter API key
 
 Plotting my Google Maps data    
 ```{r}
+devtools::install_github("dkahle/ggmap")
 require(ggmap); require(viridis)
+
+# for dynamic loading of different file types to add within function (25-10-19)
+require(here)
+
+folder1 <- "geodata"
+folder2 <- "jan"
+file <- "my_geo_data.json"
+readfunction <- readr::read_lines
+filetype <- ".json"
+if(filetype==".json")here(folder1,folder2,file) %>% readfunction
+
+
 
 my_map <- function(location,zoom,source,maptype,bg,darken,colv,alpha){
   # zoom: 10 = metropolitan level, 18 = street level. 12 is a useable city level
@@ -649,9 +663,24 @@ if(zoom<13){
 
 qmap(baylor, zoom = 14, maptype = 53428, api_key = api_key,
      source = "cloudmade")
-qmap("houston", zoom = 14, maptype = 58916, api_key = api_key,
+qmap("Houston", zoom = 14, maptype = 58916, api_key = api_key,
      source = "osm")
 ```
+
+Using the `osmar` package to read in map data directly from the web.  
+
+**OPTION 1**  
+**Use to download streets for snazzymaps @streetpaths @polylines**
+[osmar package](https://rstudio-pubs-static.s3.amazonaws.com/12696_9fd49fb7055c40ff9b3a3ea740e13ab3.html).  
+[PDF reference with code](https://journal.r-project.org/archive/2013-1/eugster-schlesinger.pdf).  
+
+1. Create and download data from openstreetmap.org  
+2. Read in the osm.db data with the `osmar` package  
+
+![osmar](osmar.jpg)  
+
+**OPTION 2**      
+[Query the OSM database ](https://dominicroye.github.io/en/2018/accessing-openstreetmap-data-with-r/)    
 
 
 ### Geocodes  
@@ -677,7 +706,8 @@ The `googleway` package
 # https://github.com/SymbolixAU/googleway/blob/master/vignettes/googleway-vignette.Rmd
 require(googleway)
 loc <- "Medellin"
-google_map(api_key,location=loc)
+api <- set_key(api_key)
+google_map(api,location=loc)
 
 ```
 
@@ -712,10 +742,11 @@ require(tmap);require(gganimate)
 ```{r}
 # https://bookdown.org/robinlovelace/geocompr/adv-map.html
 # @mapdeck
-install.packages("mapdeck")
-install.packages("usethis")
+# install.packages("mapdeck")
+# install.packages("usethis")
 
-library(mapdeck)
+require(mapdeck)
+require(usethis)
 mb_key <- readLines("mb.txt")
 
 set_token(Sys.getenv(mb_key))
@@ -729,6 +760,14 @@ add_grid(data = df, lat = "lat", lon = "lng", cell_size = 1000,
          elevation_scale = 50, layer_id = "grid_layer",
          colour_range = viridisLite::plasma(6))
 
+
+
+
+ms = mapdeck_style("dark")
+mapdeck(style = ms, token = mb_key, pitch = 90, location = c(0, 52), zoom = 4) %>%
+  add_grid(data = df, lat = "lat", lon = "lng", cell_size = 1000,
+           elevation_scale = 5, layer_id = "grid_layer",
+           colour_range = viridisLite::plasma(6))
 
 ```
 
@@ -817,6 +856,7 @@ require(ggmap)
 #   scale_color_gradientn(colours = rainbow(7), breaks = seq(25, 200, by = 25))
 
 # high res
+api_key <- readLines("ayepeeeye.txt")
 d <- map_data("worldHires", c("Colombia","Ecuador"))
 str(d)
 
@@ -835,7 +875,7 @@ pdf(paste0(here(),"/worldhires_test.pdf"),onefile=T,width=11.7,height=16.5,paper
 
 ggplot(d) + 
   geom_polygon(aes(x=long, y = lat, group = group)) + 
-  geom_point(data=gc,mapping=aes(lon,lat,col="#f33333")) +
+  geom_point(data=gc,aes(lon,lat),col="#F33333") +
   theme_tufte() +
   coord_map("mercator") 
 
@@ -868,6 +908,20 @@ map
 
 ### Links and tutorials  
 \ 
+
+#### `maps`    
+
+Get latlon of world capital cities  
+```{r}
+# https://www.r-bloggers.com/geographic-distance/
+require(maps)
+world.cities %>% str
+
+```
+
+
+
+
 #### `rjson`  
 How to use the `geojsonio` package      
 [`rjson`tutorial](https://www.tutorialspoint.com/r/r_json_files.htm)  
@@ -886,7 +940,43 @@ names(ll)
 names(amdam)
 ll <- ll[,c("latitude","longitude")]
 par(bg="black")
-plot(subset(amdam,select = c("latitude","longitude")),pch=20,cex=rpm/10,col=adjustcolor("purple",0.3))
+
+cleanliness <- amdam[,"review_scores_cleanliness"] %>% unique
+cleanliness[is.na(cleanliness)] <- 1
+beds <- amdam[,"beds"] %>% unique
+beds[is.na(beds)] <- 1
+beds <- beds + 1
+
+colv <- "orange"
+site_names <- paste0("Rating: \n", amdam$review_scores_rating,
+                      "\nCheck-in: \n", amdam$review_scores_checkin, 
+                      "\nCleanliness: \n", amdam$review_scores_cleanliness,
+                      "\nLocation: \n", amdam$review_scores_location
+                      ) 
+
+amdam[is.na(amdam)] <- 1 # turn nas into 1
+
+require(leaflet)
+map <- leaflet() %>% 
+  setView(amdam[1,"longitude"],amdam[1,"latitude"],zoom=12) %>% 
+  addTiles() %>% 
+  addCircleMarkers(amdam[,"longitude"],
+                   amdam[,"latitude"],
+                   radius = amdam$review_scores_cleanliness/20,
+                   stroke = TRUE,
+                   weight = 3, 
+                   opacity = 0.5,
+                   color = colv,
+                   fillColor = colv,
+                   label=site_names,
+                   popup=site_names) %>%
+  addProviderTiles("CartoDB.DarkMatter")
+map
+names(providers)
+
+
+
+plot(subset(amdam,select =  c("latitude","longitude")),pch=20,cex=2,col=adjustcolor("purple",0.3))
 unique(amdam$number_of_reviews)
 rpm = unique(round(amdam$reviews_per_month))
 rpm[is.na(rpm)] = 1

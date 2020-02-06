@@ -67,23 +67,16 @@ vignette: >
   MathJax.Hub.Config({ TeX: { equationNumbers: {autoNumber: "all"} } });
 </script>
 
-```{r echo = FALSE}
-# library(rmarkdown)
-# setwd("")
-# f <- list.files()[1]
-# render(f, output_format='pdf_document')
-```
-
 ```{r, set-options, echo = FALSE, cache = FALSE}
 options(width=100)
 knitr::opts_chunk$set(
- eval = TRUE, # run all code
- # echo = FALSE, # show code chunks in output 
+ eval = F, # run all code
+ echo = T, # show code chunks in output
  comment = "",
  tidy.opts=list(width.cutoff=100), # set width of code chunks in output
- tidy=TRUE, # make output as tidy
- message = FALSE,  # mask all messages
- warning = FALSE, # mask all warnings 
+ tidy=T, # make output as tidy
+ message = F,  # mask all messages
+ warning = F, # mask all warnings 
  size="small" # set code chunk size
 )
 
@@ -118,7 +111,7 @@ My Google timeline data with `r params$package`.
 
 ### Install dependencies
 ```{r, load packages, include=T, cache=F, message=F, warning=F, results='hide'}
-packages <- c("rgdal","dplyr","zoo","RColorBrewer","viridis","plyr","digitize","jpeg","devtools","imager","dplyr","ggplot2","ggridges","ggjoy","ggthemes","svDialogs","data.table","tibble","extrafont","sp")   
+packages <- c("rgdal","dplyr","zoo","RColorBrewer","viridis","plyr","digitize","jpeg","devtools","imager","dplyr","ggplot2","ggridges","ggjoy","ggthemes","svDialogs","data.table","tibble","extrafont","sp","leaflet","htmltools")   
 if (require(packages)) {
     install.packages(packages,dependencies = T)
     require(packages)
@@ -131,9 +124,348 @@ lapply(packages,library,character.only=T)
 \  
 
 ### Leaflet  
-```{r,eval=T,echo=F}
+```{r,eval=T}
 require(leaflet)
 
+# airbnb data 
+amdam <- read.csv("amdam.csv",header=T,sep=",",stringsAsFactors = T)
+ll <- amdam[1,]
+ll <- ll[,c("latitude","longitude")]
+par(bg="black")
+
+cleanliness <- amdam[,"review_scores_cleanliness"] %>% unique
+cleanliness[is.na(cleanliness)] <- 1
+beds <- amdam[,"beds"] %>% unique
+beds[is.na(beds)] <- 1
+beds <- beds + 1
+
+colv <- "orange"
+site_names <- paste0("Rating: ", amdam$review_scores_rating,
+                      "\n\nCheck-in: ", amdam$review_scores_checkin, 
+                      "\nCleanliness: ", amdam$review_scores_cleanliness,
+                      "\nLocation: ", amdam$review_scores_location
+                      ) 
+
+amdam[is.na(amdam)] <- 1
+  
+require(leaflet)
+map <- leaflet() %>% 
+  setView(amdam[1,"longitude"],amdam[1,"latitude"],zoom=12) %>% 
+  addTiles() %>% 
+  addCircleMarkers(amdam[,"longitude"],
+                   amdam[,"latitude"],
+                   radius = amdam$review_scores_cleanliness/20,
+                   stroke = TRUE,
+                   weight = 3, 
+                   opacity = 0.5,
+                   color = colv,
+                   fillColor = colv,
+                   label=site_names,
+                   popup=site_names) %>%
+  addProviderTiles("CartoDB.DarkMatter")
+map
 
 
 ```
+
+
+```{r,echo=F}
+require(leaflet)
+
+amdam[is.na(amdam)] <- 1 # turn nas into 1
+avail_30 <- amdam %>% dplyr::filter(amdam$availability_30 > 1) 
+avail_60 <- amdam %>% dplyr::filter(amdam$availability_60 > 1) 
+avail_90 <- amdam %>% dplyr::filter(amdam$availability_90 > 1) 
+
+  
+require(leaflet)
+map <- leaflet() %>% 
+  setView(amdam[1,"longitude"],amdam[1,"latitude"],zoom=12) %>% 
+  addTiles() %>% 
+  addCircleMarkers(avail_30[,"longitude"],
+                   avail_30[,"latitude"],
+                   radius = avail_30$review_scores_cleanliness/20,
+                   stroke = TRUE,
+                   weight = 3, 
+                   opacity = 0.5,
+                   color = "lightblue",
+                   fillColor = "lightblue",
+                   label=site_names,
+                   popup=site_names) %>%
+  addCircleMarkers(avail_60[,"longitude"],
+                   avail_60[,"latitude"],
+                   radius = avail_60$review_scores_cleanliness/20,
+                   stroke = TRUE,
+                   weight = 3, 
+                   opacity = 0.5,
+                   color = "pink",
+                   fillColor = "pink",
+                   label=site_names,
+                   popup=site_names) %>% 
+  addProviderTiles("CartoDB.DarkMatter")
+map
+
+
+```
+
+### Interactive label options and custom tiles  
+
+```{r, eval=T}
+
+require(leaflet)  
+require(dplyr)
+require(geosphere)
+require(htmltools)
+
+setview <- c(7.369722,12.354722)
+marker <- c(-26.828764,-17.009277)
+mp <- data.frame(
+  "name" = c("Melbourne","Atlanta"),
+  "lat" = c(-37.813629,33.748997),
+  "lon" = c(144.963058,-84.387985)
+)
+latlon_matrix <- matrix(c(mp[,"lon"],mp[,"lat"]),ncol=2)
+custom_tile <- "http://a.sm.mapstack.stamen.com/(positron,(mapbox-water,$776699[hsl-color]),(buildings,$002bff[hsl-color]),(parks,$6abb9d[hsl-color]))/{z}/{x}/{y}.png"
+colv <- "#4C3661"
+opac <- 0.5
+site_names <- mp$name
+ttl <- "Debunking Flat Earth theory 101"
+weblink <- "https://www.tfes.org/contact.php" # weblink
+webname <- "Flat Earth Society"
+href <- paste0("<b><a href=",weblink,">",webname,"</a></b>")
+text_label <- "This is curved"
+popup_label <- paste(sep = "<br/>",
+                    "This part wraps around", paste0("@",href)
+)
+# label options 
+marker_label_opt <- labelOptions(textsize = "20px",opacity = 0.5,offset = c(0,0))
+popup_label_opt <- popupOptions(closeOnClick = F, closeButton = FALSE, textOnly = F, textsize = "2px")
+text_label_opt <- labelOptions(noHide = F, direction = 'top', textOnly = F, opacity = 1,offset = c(0,0))
+
+# title
+tag.map.title <- tags$style(
+  HTML(".leaflet-control.map-title { 
+       transform: translate(-50%,20%);
+       position: fixed !important;
+       left: 50%;
+       text-align: center;
+       padding-left: 10px; 
+       padding-right: 10px; 
+       background: white; opacity: 0.7;
+       font-weight: bold;
+       font-size: 25px;
+       }"
+       ))
+
+title <- tags$div(
+  tag.map.title, HTML(ttl)
+)  
+
+# map
+map <- gcIntermediate(latlon_matrix[1,],
+                      latlon_matrix[2,],
+                      n=100, 
+                      addStartEnd=T,
+                      sp=T) %>% 
+  leaflet() %>% 
+  setView(setview[2],setview[1],zoom=3) %>% 
+  addTiles(custom_tile) %>% 
+  addCircleMarkers(mp[,"lon"],
+                   mp[,"lat"],
+                   radius = 10,
+                   stroke = TRUE,
+                   weight = 3, 
+                   opacity = opac,
+                   color = colv,
+                   fillColor = colv,
+                   label=paste(site_names),
+                   labelOptions = marker_label_opt
+  ) %>%
+  addPolylines(
+    color = colv,
+    opacity = opac,label = text_label, labelOptions = text_label_opt) %>% 
+  addPopups(marker[2],marker[1], popup = popup_label,
+            options = popup_label_opt
+  ) %>% 
+  addControl("@darwinanddavis", position = "topright") %>% 
+  addControl(title, position = "topleft", className="map-title")
+map
+# save_html(map,"flatearth_2.html")
+
+
+```
+
+
+# Custom map tiles 
+
+```{r}
+require(leaflet)
+
+# flat earth 
+custom_tile <- "http://d.sm.mapstack.stamen.com/(positron,(parks,$3bcdd5[hsl-color]),(streets-and-labels,$e2d2f0[hsl-color]),(buildings,$e2d2f0[hsl-color]))/{z}/{x}/{y}.png"
+
+
+custom_tile <- "http://d.sm.mapstack.stamen.com/((darkmatter,$00ffff[hsl-color]),(mapbox-water,$00589c[hsl-color]),(parks,$ff9a30[source-in]))/{z}/{x}/{y}.png"
+
+# conference sites
+custom_tile <- "http://c.sm.mapstack.stamen.com/(toner-lite,(mapbox-water,$000[@80]),(parks,$000[@70]),(buildings,$fabe68[hsl-color]))/{z}/{x}/{y}.png"
+
+custom_tile <- "http://b.sm.mapstack.stamen.com/((mapbox-water,$f2f7ff[hsl-color]),(positron,$f2f7ff[hsl-color]),(buildings,$e2edff[hsl-color]),(parks,$d5e5ff[hsl-color]))/{z}/{x}/{y}.png"
+
+custom_tile <- "http://b.sm.mapstack.stamen.com/((mapbox-water,$f2f7ff[hsl-color]),(positron,$f2f7ff[hsl-color]),(buildings,$e2edff[hsl-color]),(parks,$2c403b[hsl-color]))/{z}/{x}/{y}.png"
+
+leaflet() %>% 
+  setView(144.963058,-37.813629,zoom=12) %>% 
+  addTiles(custom_tile)
+
+```
+
+
+
+### Flight connections maps  
+
+```{r}
+# flight connection maps  
+
+# https://www.gis-blog.com/flight-connection-map-with-r/
+# http://kateto.net/network-visualization
+# https://stackoverflow.com/questions/54362265/plotting-routes-that-cross-the-international-dateline-using-leaflet-library-in-r
+
+
+```
+
+
+### Drawing networks of lines e.g. roads 
+
+
+```{r}
+# https://rpubs.com/walkerke/points_to_line
+```
+
+
+
+### Adding images within popup markers
+<!-- https://stackoverflow.com/questions/32352539/plotting-barchart-in-popup-using-leaflet-library/36237460#36237460 -->  
+
+<!-- https://stackoverflow.com/questions/36433899/image-in-r-leaflet-marker-popups -->
+
+
+### Line breaks in labels and popups
+
+```{r}
+require(dplyr)
+require(htmltools)
+require(purrr)
+
+long <- c(147.5, 147.5, 147.5, 147, 147)
+lat <- c(-36.5, -36.5, -36.5, -36, -36)
+label <- c(1, 1, 2, 1, 2)
+
+markers <- data.frame(lat,long,label)
+
+# label linebreak
+label_breaks <- paste(
+  "<strong> Lat: </strong>", markers$lat, "<br/>",
+  "<strong> Lon: </strong>", markers$long, "<br/>"
+) %>% map(htmltools::HTML)
+
+# popup linebreak method 1
+popup_breaks1 <- paste(sep = "<br/>",
+                    "<strong> Line1: </strong>", markers$label,
+                    "",
+                    "<strong> Line2: </strong>", markers$label,
+                    ""
+)
+
+# popup break 2 # Aggregate method
+popup_breaks2 <- aggregate(label ~ lat + long, markers, paste, collapse = "<br/>")
+
+
+
+# Markers with all of the labels
+leaflet() %>%
+  addTiles() %>%  
+  addMarkers(lng=markers$long, lat= markers$lat, 
+             label=label_breaks,
+             popup= popup_breaks2
+  )
+```
+
+
+### Update map elements with leaflet proxy  
+E.g. widget updates that don't refresh map each iteration 
+<!-- https://www.youtube.com/watch?v=G5BDub -->
+
+### Update map elements with hover
+<!-- https://www.kaggle.com/skirmer/exploratory-analysis-of-austin-crime-with-maps -->
+
+```{r}
+require(maps)
+require(leaflet)
+
+# world.cities data from \maps
+world_cities <- with(world.cities, data.frame(
+  "city" = name,
+  "country" = country.etc,
+  "lat" = lat,
+  "lon" = long,
+  "population" = pop
+  )
+)
+world_cities %>% str
+latlon <- world_cities[,c("lat","lon")]
+radius <- world_cities[,"population"]/1000000
+popup <- world_cities[,"city"]
+label <- world_cities[,"country"]
+
+# style 
+custom_tile <- "http://c.sm.mapstack.stamen.com/(toner-lite,(mapbox-water,$000[@80]),(parks,$000[@70]),(buildings,$fabe68[hsl-color]))/{z}/{x}/{y}.png"
+colv <- "#F90F40"
+opac <- 0.3
+
+map <- leaflet() %>% 
+  setView(0,0,zoom=3) %>% 
+  addTiles(custom_tile) %>% 
+  addCircleMarkers(latlon[,"lon"],
+                   latlon[,"lat"],
+                   radius = radius,
+                   stroke = TRUE,
+                   weight = 3, 
+                   opacity = opac,
+                   color = colv,
+                   fillColor = colv,
+                   label = label,
+                   popup = popup 
+  )
+map
+
+```
+
+### Add minimap
+
+<!-- https://rstudio.github.io/leaflet/morefeatures.html -->
+
+
+### Add measurement tool
+
+```{r}
+# https://rstudio.github.io/leaflet/morefeatures.html
+leaflet %>% 
+  setview(0,0,13) %>% 
+  addTiles(custom_tile) %>% 
+  fitBounds(13.76134, 52.675499, 13.0884, 52.33812) %>%
+  addMeasure(
+    position = "bottomleft",
+    primaryLengthUnit = "meters",
+    primaryAreaUnit = "sqmeters",
+    activeColor = "#3D535D",
+    completedColor = "#7D4479")
+```
+
+
+### Improve render performance with `leafgl`    
+[https://github.com/r-spatial/leafgl](https://github.com/r-spatial/leafgl)   
+```{r}
+
+```
+
